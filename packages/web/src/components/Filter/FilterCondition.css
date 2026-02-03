@@ -1,0 +1,187 @@
+.filter-condition {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 0;
+}
+
+.filter-condition:not(:last-child) {
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.filter-condition-logic {
+  margin-bottom: 4px;
+}
+
+.filter-condition-logic-select {
+  width: 70px;
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-background);
+  font-size: var(--font-size-small);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.filter-condition-logic-select:hover {
+  border-color: var(--color-border-hover);
+}
+
+.filter-condition-logic-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb, 33, 115, 70), 0.2);
+}
+
+.filter-condition-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-condition-operator {
+  flex: 0 0 auto;
+  min-width: 140px;
+  padding: 6px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-background);
+  font-size: var(--font-size-small);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.filter-condition-operator:hover {
+  border-color: var(--color-border-hover);
+}
+
+.filter-condition-operator:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb, 33, 115, 70), 0.2);
+}
+
+.filter-condition-values {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+
+.filter-condition-input {
+  flex: 1;
+  min-width: 80px;
+  padding: 6px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-background);
+  font-size: var(--font-size-small);
+  color: var(--color-text);
+}
+
+.filter-condition-input:hover {
+  border-color: var(--color-border-hover);
+}
+
+.filter-condition-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb, 33, 115, 70), 0.2);
+}
+
+.filter-condition-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* Remove spinner from number inputs */
+.filter-condition-input[type='number']::-webkit-inner-spin-button,
+.filter-condition-input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.filter-condition-input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+.filter-condition-separator {
+  flex-shrink: 0;
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+}
+
+.filter-condition-remove {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.filter-condition-remove:hover {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.filter-condition-remove:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(var(--color-error-rgb, 200, 50, 50), 0.3);
+}
+
+.filter-condition-remove:focus:not(:focus-visible) {
+  box-shadow: none;
+}
+
+.filter-condition-remove:focus-visible {
+  box-shadow: 0 0 0 2px rgba(var(--color-error-rgb, 200, 50, 50), 0.3);
+}
+
+/* Condition Builder */
+.condition-builder {
+  display: flex;
+  flex-direction: column;
+}
+
+.condition-builder-add {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  margin-top: 8px;
+  border: 1px dashed var(--color-border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-small);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background-color 0.15s;
+}
+
+.condition-builder-add:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: rgba(var(--color-primary-rgb, 33, 115, 70), 0.05);
+}
+
+.condition-builder-add:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb, 33, 115, 70), 0.2);
+}
+
+.condition-builder-add:focus:not(:focus-visible) {
+  box-shadow: none;
+}
+
+.condition-builder-add:focus-visible {
+  box-shadow: 0 0 0 2px rgba(var(--color-primary-rgb, 33, 115, 70), 0.2);
+}

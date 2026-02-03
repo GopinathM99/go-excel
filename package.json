@@ -1,0 +1,50 @@
+{
+  "name": "ms-excel",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A full-featured spreadsheet application for web and desktop",
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --filter @excel/web dev",
+    "dev:desktop": "pnpm --filter @excel/desktop dev",
+    "build": "pnpm -r build",
+    "build:web": "pnpm --filter @excel/web build",
+    "build:desktop": "pnpm --filter @excel/desktop build",
+    "test": "pnpm -r test",
+    "test:unit": "pnpm --filter @excel/core test",
+    "test:e2e": "pnpm --filter @excel/web test:e2e",
+    "lint": "pnpm -r lint",
+    "lint:fix": "pnpm -r lint:fix",
+    "format": "prettier --write \"packages/**/*.{ts,tsx,json,css}\"",
+    "format:check": "prettier --check \"packages/**/*.{ts,tsx,json,css}\"",
+    "typecheck": "pnpm -r typecheck",
+    "clean": "pnpm -r clean && rm -rf node_modules",
+    "prepare": "husky"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@types/node": "^20.11.0",
+    "eslint": "^9.0.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "husky": "^9.0.0",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.2.0",
+    "typescript": "^5.3.0",
+    "typescript-eslint": "^8.0.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,css,md}": [
+      "prettier --write"
+    ]
+  }
+}

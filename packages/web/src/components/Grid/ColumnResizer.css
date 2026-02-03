@@ -1,0 +1,13 @@
+.column-resizer {
+  position: absolute;
+  top: 0;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: calc(var(--z-header) + 1);
+}
+
+.column-resizer:hover,
+.column-resizer.dragging {
+  background: var(--color-selection-border);
+}

@@ -1,0 +1,76 @@
+id,title,epic,phase,lane,estimate,priority,dependencies
+A1,Virtualized grid renderer,Core Grid and Editing,MVP,shared,L,P0,
+A2,Cell selection and navigation,Core Grid and Editing,MVP,shared,M,P0,A1
+A3,In-cell editing + formula bar,Core Grid and Editing,MVP,shared,M,P0,A2
+A4,Undo/redo engine,Core Grid and Editing,MVP,shared,M,P0,A3
+B1,Formula parser (grammar + AST),Formula Engine,MVP,shared,M,P0,A3
+B2,Evaluator and dependency graph,Formula Engine,MVP,shared,L,P0,B1
+B3,Core function library v1,Formula Engine,MVP,shared,M,P0,B2
+C1,Basic cell formatting,Formatting and Styles,MVP,shared,M,P1,A3
+C2,Number format support,Formatting and Styles,MVP,shared,M,P1,A3
+D1,Sort and filter,Data Tools,MVP,shared,M,P1,A4
+D2,Data validation,Data Tools,MVP,shared,M,P1,A3
+E1,CSV import/export,File Import/Export,MVP,shared,M,P0,A3
+E2,XLSX import/export (basic),File Import/Export,MVP,shared,L,P0,B3;C1;C2
+F1,Basic chart types,Charts,MVP,shared,M,P2,B2;A3
+G1,Realtime sync server,Collaboration,MVP,web,M,P0,A3
+G2,CRDT integration,Collaboration,MVP,web,L,P0,G1
+G3,Presence and comments,Collaboration,MVP,web,M,P1,G2
+H1,Desktop shell,Desktop Packaging,MVP,desktop,M,P1,E1
+I1,Formula test suite,Quality and Performance,MVP,shared,M,P0,B3
+I2,Performance benchmarks,Quality and Performance,MVP,shared,S,P1,A1;B2
+P1-1,Expand financial function set,Formula and Function Parity,Post-MVP,shared,M,P0,MVP formula engine
+P1-2,Add advanced statistical functions,Formula and Function Parity,Post-MVP,shared,M,P0,MVP formula engine
+P1-3,Dynamic array functions,Formula and Function Parity,Post-MVP,shared,L,P0,MVP formula engine
+P1-4,Volatile functions and calc modes,Formula and Function Parity,Post-MVP,shared,M,P0,MVP formula engine
+P1-5,LET and LAMBDA support,Formula and Function Parity,Post-MVP,shared,M,P0,MVP formula engine
+P1-6,Dynamic array helper functions,Formula and Function Parity,Post-MVP,shared,L,P0,P1-3
+P1-7,3D references and external links,Formula and Function Parity,Post-MVP,shared,L,P1,MVP formula engine;MVP XLSX
+P1-8,Array constants and range operators,Formula and Function Parity,Post-MVP,shared,M,P1,MVP formula engine
+P2-1,Advanced conditional formatting,Advanced Formatting and Styles,Post-MVP,shared,L,P1,MVP formatting;MVP XLSX support
+P2-2,Custom number formats,Advanced Formatting and Styles,Post-MVP,shared,M,P1,MVP formatting
+P2-3,Theme and style fidelity,Advanced Formatting and Styles,Post-MVP,shared,M,P1,MVP formatting;MVP XLSX support
+P2-4,Rich text and hyperlinks in cells,Advanced Formatting and Styles,Post-MVP,shared,M,P1,MVP formatting;MVP XLSX
+P3-1,Pivot cache layer,Pivot Tables and Pivot Charts,Post-MVP,shared,L,P1,MVP data tools
+P3-2,Pivot table UI builder,Pivot Tables and Pivot Charts,Post-MVP,shared,L,P1,P3-1
+P3-3,Pivot charts,Pivot Tables and Pivot Charts,Post-MVP,shared,M,P2,P3-2
+P4-1,Extended chart types,Advanced Charts,Post-MVP,shared,M,P2,MVP charts
+P4-2,Trendlines and annotations,Advanced Charts,Post-MVP,shared,M,P2,P4-1
+P4-3,Secondary axis and error bars,Advanced Charts,Post-MVP,shared,M,P2,P4-1
+P4-4,Dynamic chart titles,Advanced Charts,Post-MVP,shared,S,P2,P4-1
+P5-1,Import pipeline (Power Query lite),Advanced Data Tools,Post-MVP,shared,L,P1,MVP data tools
+P5-2,Data cleanup utilities,Advanced Data Tools,Post-MVP,shared,M,P1,MVP data tools
+P5-3,Slicers and advanced filters,Advanced Data Tools,Post-MVP,shared,M,P2,P3-2
+P5-4,What-if analysis tools,Advanced Data Tools,Post-MVP,shared,L,P1,MVP formula engine;MVP data tools
+P5-5,Grouping, subtotals, consolidate,Advanced Data Tools,Post-MVP,shared,M,P1,MVP data tools
+P6-1,Custom function framework (UDF),Automation and Extensibility,Post-MVP,shared,M,P1,MVP formula engine
+P6-2,Macro engine,Automation and Extensibility,Post-MVP,shared,L,P2,P6-1
+P6-3,Add-in/plugin API,Automation and Extensibility,Post-MVP,shared,L,P2,P6-1
+P6-4,Office Scripts compatibility (optional),Automation and Extensibility,Post-MVP,shared,L,P2,P6-1
+P6-5,VBA import warnings or parser (optional),Automation and Extensibility,Post-MVP,shared,M,P2,MVP XLSX
+P7-1,Range-level permissions,Collaboration Advanced,Post-MVP,web,M,P1,MVP collaboration
+P7-2,Change tracking and approvals,Collaboration Advanced,Post-MVP,web,M,P1,MVP collaboration
+P7-3,Offline edits and merge,Collaboration Advanced,Post-MVP,web,L,P1,MVP collaboration
+P8-1,Advanced style and metadata support,XLSX Parity,Post-MVP,shared,L,P1,MVP XLSX
+P8-2,Complex conditional formatting and rules,XLSX Parity,Post-MVP,shared,L,P1,P2-1
+P8-3,Pivot and chart compatibility,XLSX Parity,Post-MVP,shared,M,P2,P3-3;P4-1
+P8-4,Template file support (.xltx),XLSX Parity,Post-MVP,shared,M,P2,MVP XLSX
+P8-5,Legacy binary formats (.xls/.xlsb),XLSX Parity,Post-MVP,shared,L,P2,MVP XLSX
+P9-1,Multi-threaded calculation,Performance and Scale,Post-MVP,shared,L,P1,MVP formula engine
+P9-2,Memory-optimized grid storage,Performance and Scale,Post-MVP,shared,L,P1,MVP grid
+P10-1,Desktop OS integrations,Platform Polish,Post-MVP,desktop,M,P2,MVP desktop shell
+P10-2,Web PWA + offline,Platform Polish,Post-MVP,web,M,P2,MVP web
+P10-3,Accessibility and localization,Platform Polish,Post-MVP,shared,M,P2,MVP UI
+P11-1,Paste Special,Advanced Editing UX,Post-MVP,shared,M,P1,MVP clipboard;MVP formatting
+P11-2,Find & Replace,Advanced Editing UX,Post-MVP,shared,M,P1,MVP grid
+P11-3,Go To Special,Advanced Editing UX,Post-MVP,shared,M,P2,MVP grid
+P11-4,Trace precedents/dependents,Advanced Editing UX,Post-MVP,shared,M,P2,MVP dependency graph
+P12-1,Split panes and new window,View, Layout, and Print,Post-MVP,shared,M,P2,MVP grid
+P12-2,Custom views,View, Layout, and Print,Post-MVP,shared,M,P2,MVP grid
+P12-3,Print layout and page breaks,View, Layout, and Print,Post-MVP,shared,M,P2,MVP print/export
+P12-4,Headers, footers, and print titles,View, Layout, and Print,Post-MVP,shared,M,P2,P12-3
+P13-1,Images on grid,Objects and Drawing,Post-MVP,shared,M,P2,MVP grid
+P13-2,Shapes and connectors,Objects and Drawing,Post-MVP,shared,L,P2,P13-1
+P13-3,Text boxes,Objects and Drawing,Post-MVP,shared,M,P2,P13-1
+P14-1,Localized formula names and separators,Compatibility and Localization,Post-MVP,shared,L,P2,MVP formula engine
+P14-2,RTL layout support,Compatibility and Localization,Post-MVP,shared,M,P2,MVP UI

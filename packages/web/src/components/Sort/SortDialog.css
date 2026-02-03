@@ -1,0 +1,276 @@
+/* Backdrop overlay */
+.sort-dialog-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Dialog container */
+.sort-dialog {
+  background: var(--color-background);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.24);
+  min-width: 400px;
+  max-width: 500px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.2s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+.sort-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.sort-dialog-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.sort-dialog-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.sort-dialog-close:hover {
+  background: var(--color-border-light);
+  color: var(--color-text);
+}
+
+.sort-dialog-close:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.2);
+}
+
+/* Body */
+.sort-dialog-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Range display */
+.sort-dialog-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--color-surface);
+  border-radius: 4px;
+  margin-bottom: 16px;
+  font-size: var(--font-size-base);
+}
+
+.sort-dialog-range-label {
+  color: var(--color-text-secondary);
+}
+
+.sort-dialog-range-value {
+  font-weight: 500;
+  color: var(--color-text);
+  font-family: 'Consolas', 'Monaco', monospace;
+}
+
+/* Error message */
+.sort-dialog-error {
+  padding: 10px 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 4px;
+  color: #dc2626;
+  font-size: var(--font-size-base);
+  margin-bottom: 16px;
+}
+
+/* Options */
+.sort-dialog-options {
+  margin-bottom: 16px;
+}
+
+.sort-dialog-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.sort-dialog-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--color-primary);
+}
+
+.sort-dialog-checkbox input[type="checkbox"]:focus {
+  outline: 2px solid rgba(0, 120, 212, 0.4);
+  outline-offset: 1px;
+}
+
+/* Sort levels container */
+.sort-dialog-levels {
+  background: var(--color-surface);
+  border-radius: 6px;
+  padding: 8px 16px;
+  margin-bottom: 12px;
+}
+
+/* Add level button */
+.sort-dialog-add-level {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px dashed var(--color-border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-base);
+  font-family: var(--font-family);
+  cursor: pointer;
+  width: 100%;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.sort-dialog-add-level:hover {
+  border-color: var(--color-selection-border);
+  color: var(--color-selection-border);
+  background: rgba(0, 120, 212, 0.05);
+}
+
+.sort-dialog-add-level:focus {
+  outline: none;
+  border-color: var(--color-selection-border);
+  box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.2);
+}
+
+.sort-dialog-add-level span {
+  font-size: 18px;
+  font-weight: 300;
+}
+
+/* Footer */
+.sort-dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--color-border-light);
+  background: var(--color-surface);
+  border-radius: 0 0 8px 8px;
+}
+
+/* Buttons */
+.sort-dialog-button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: var(--font-size-base);
+  font-family: var(--font-family);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-width: 80px;
+}
+
+.sort-dialog-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.4);
+}
+
+.sort-dialog-button-secondary {
+  border: 1px solid var(--color-border);
+  background: var(--color-background);
+  color: var(--color-text);
+}
+
+.sort-dialog-button-secondary:hover {
+  background: var(--color-border-light);
+}
+
+.sort-dialog-button-secondary:active {
+  background: var(--color-border);
+}
+
+.sort-dialog-button-primary {
+  border: 1px solid var(--color-primary);
+  background: var(--color-primary);
+  color: white;
+}
+
+.sort-dialog-button-primary:hover {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+.sort-dialog-button-primary:active {
+  background: #145c32;
+  border-color: #145c32;
+}
+
+.sort-dialog-button-primary:disabled {
+  background: #93c5a8;
+  border-color: #93c5a8;
+  cursor: not-allowed;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .sort-dialog {
+    min-width: 320px;
+    margin: 16px;
+  }
+
+  .sort-dialog-header,
+  .sort-dialog-body,
+  .sort-dialog-footer {
+    padding: 12px 16px;
+  }
+}

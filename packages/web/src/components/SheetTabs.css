@@ -1,0 +1,76 @@
+.sheet-tabs {
+  display: flex;
+  align-items: center;
+  height: 30px;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+  padding: 0 4px;
+}
+
+.sheet-tab-add {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--color-text-secondary);
+}
+
+.sheet-tab-add:hover {
+  background: var(--color-border-light);
+  color: var(--color-text);
+}
+
+.sheet-tabs-list {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  overflow: hidden;
+  gap: 2px;
+  padding: 0 4px;
+}
+
+.sheet-tab {
+  padding: 4px 12px;
+  border: none;
+  border-radius: 4px 4px 0 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.sheet-tab:hover {
+  background: var(--color-border-light);
+}
+
+.sheet-tab.active {
+  background: var(--color-background);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-background);
+  margin-bottom: -1px;
+}
+
+.sheet-tabs-scroll {
+  display: flex;
+  gap: 2px;
+}
+
+.sheet-nav-button {
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
+
+.sheet-nav-button:hover {
+  background: var(--color-border-light);
+}

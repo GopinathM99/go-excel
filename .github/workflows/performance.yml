@@ -1,0 +1,325 @@
+name: Performance Testing
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+  push:
+    branches:
+      - main
+  schedule:
+    # Run weekly on Sunday at midnight UTC to update baseline
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+    inputs:
+      update_baseline:
+        description: 'Update baseline with current results'
+        required: false
+        default: 'false'
+        type: boolean
+      threshold:
+        description: 'Regression threshold percentage'
+        required: false
+        default: '10'
+        type: string
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '8'
+
+jobs:
+  performance-tests:
+    name: Run Performance Benchmarks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Run Core Performance Tests
+        id: core-perf
+        working-directory: packages/core
+        run: |
+          echo "Running core performance benchmarks..."
+          pnpm test:perf 2>&1 | tee perf-output.txt || true
+
+          # Extract test results
+          if grep -q "FAIL" perf-output.txt; then
+            echo "perf_status=failure" >> $GITHUB_OUTPUT
+          else
+            echo "perf_status=success" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run Performance Validation
+        id: validate
+        working-directory: packages/core
+        run: |
+          THRESHOLD="${{ github.event.inputs.threshold || '10' }}"
+          UPDATE_FLAG=""
+
+          if [[ "${{ github.event.inputs.update_baseline }}" == "true" ]] || [[ "${{ github.event_name }}" == "schedule" ]]; then
+            UPDATE_FLAG="--update-baseline"
+          fi
+
+          echo "Running validation with threshold: ${THRESHOLD}%"
+          npx tsx scripts/validate-performance.ts --threshold "$THRESHOLD" --json results.json $UPDATE_FLAG 2>&1 | tee validation-output.txt || true
+
+          # Check if validation passed
+          if grep -q "All performance targets met" validation-output.txt; then
+            echo "validation_status=success" >> $GITHUB_OUTPUT
+          else
+            echo "validation_status=failure" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate Performance Report
+        id: report
+        working-directory: packages/core
+        run: |
+          npx tsx scripts/generate-perf-report.ts --format both
+
+          # Find the generated markdown report
+          REPORT_FILE=$(ls -t tests/perf/reports/*.md 2>/dev/null | head -1)
+
+          if [[ -n "$REPORT_FILE" ]]; then
+            echo "report_path=$REPORT_FILE" >> $GITHUB_OUTPUT
+            # Store report content for PR comment
+            cat "$REPORT_FILE" > perf-report-summary.md
+          fi
+
+      - name: Upload Performance Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-results
+          path: |
+            packages/core/tests/perf/results.json
+            packages/core/results.json
+            packages/core/tests/perf/reports/
+          retention-days: 30
+
+      - name: Comment on PR with Results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            let reportContent = '';
+            try {
+              reportContent = fs.readFileSync('packages/core/perf-report-summary.md', 'utf8');
+            } catch (e) {
+              console.log('No report file found, generating basic summary');
+            }
+
+            const validationStatus = '${{ steps.validate.outputs.validation_status }}';
+            const statusEmoji = validationStatus === 'success' ? ':white_check_mark:' : ':x:';
+
+            let body = `## Performance Test Results ${statusEmoji}\n\n`;
+
+            if (validationStatus === 'success') {
+              body += `All performance targets have been met.\n\n`;
+            } else {
+              body += `**Warning:** Some performance targets were not met. Please review the results below.\n\n`;
+            }
+
+            if (reportContent) {
+              body += `<details>\n<summary>Detailed Performance Report</summary>\n\n`;
+              body += reportContent;
+              body += `\n</details>\n`;
+            }
+
+            body += `\n---\n`;
+            body += `*Performance validation threshold: ${{ github.event.inputs.threshold || '10' }}%*\n`;
+            body += `*[View full report](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID})*`;
+
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Performance Test Results')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
+
+      - name: Update Baseline (Scheduled Run)
+        if: github.event_name == 'schedule' || github.event.inputs.update_baseline == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          # Check if baseline was updated
+          if git diff --quiet packages/core/tests/perf/regression-baseline.json; then
+            echo "No changes to baseline"
+          else
+            git add packages/core/tests/perf/regression-baseline.json
+            git commit -m "chore: update performance baseline [skip ci]
+
+            Automated baseline update from scheduled workflow run.
+
+            Commit: ${{ github.sha }}
+            Run: ${{ github.run_id }}"
+            git push
+          fi
+
+      - name: Fail if Performance Regression
+        if: steps.validate.outputs.validation_status == 'failure' && github.event_name == 'pull_request'
+        run: |
+          echo "Performance validation failed. Please review the results above."
+          exit 1
+
+  web-performance-tests:
+    name: Run Web Performance Benchmarks
+    runs-on: ubuntu-latest
+    needs: performance-tests
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Run Web Performance Tests
+        working-directory: packages/web
+        run: |
+          echo "Running web rendering benchmarks..."
+          pnpm vitest run tests/perf/ --reporter=json --outputFile=perf-results.json 2>&1 | tee web-perf-output.txt || true
+
+      - name: Upload Web Performance Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-performance-results
+          path: |
+            packages/web/perf-results.json
+            packages/web/web-perf-output.txt
+          retention-days: 30
+
+  performance-comparison:
+    name: Compare with Main Branch
+    runs-on: ubuntu-latest
+    needs: [performance-tests, web-performance-tests]
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+
+      - name: Download PR Performance Results
+        uses: actions/download-artifact@v4
+        with:
+          name: performance-results
+          path: pr-results
+
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: main-branch
+
+      - name: Compare Results
+        id: compare
+        run: |
+          echo "Comparing performance results..."
+
+          # Compare baseline files if both exist
+          if [[ -f "main-branch/packages/core/tests/perf/regression-baseline.json" ]] && \
+             [[ -f "packages/core/tests/perf/regression-baseline.json" ]]; then
+            echo "Baseline comparison available"
+            echo "has_comparison=true" >> $GITHUB_OUTPUT
+          else
+            echo "No baseline to compare"
+            echo "has_comparison=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Post Comparison Comment
+        if: steps.compare.outputs.has_comparison == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            let mainBaseline, prBaseline;
+
+            try {
+              mainBaseline = JSON.parse(fs.readFileSync('main-branch/packages/core/tests/perf/regression-baseline.json', 'utf8'));
+              prBaseline = JSON.parse(fs.readFileSync('packages/core/tests/perf/regression-baseline.json', 'utf8'));
+            } catch (e) {
+              console.log('Could not read baseline files');
+              return;
+            }
+
+            let comparisonTable = '| Metric | Main | PR | Delta |\n|--------|------|-----|-------|\n';
+
+            for (const [metric, mainData] of Object.entries(mainBaseline.metrics)) {
+              const prData = prBaseline.metrics[metric];
+              if (prData) {
+                const delta = ((prData.value - mainData.value) / mainData.value * 100).toFixed(1);
+                const deltaStr = delta >= 0 ? `+${delta}%` : `${delta}%`;
+                comparisonTable += `| ${metric} | ${mainData.value}${mainData.unit} | ${prData.value}${prData.unit} | ${deltaStr} |\n`;
+              }
+            }
+
+            const body = `### Performance Comparison with Main Branch\n\n${comparisonTable}`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });

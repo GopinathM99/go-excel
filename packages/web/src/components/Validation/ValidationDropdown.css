@@ -1,0 +1,118 @@
+/* Validation Dropdown Container */
+.validation-dropdown {
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: var(--z-dropdown);
+  max-height: 200px;
+  overflow: hidden;
+}
+
+/* Dropdown List */
+.validation-dropdown-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  max-height: 192px;
+  overflow-y: auto;
+}
+
+/* Dropdown Item */
+.validation-dropdown-item {
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.validation-dropdown-item:hover,
+.validation-dropdown-item.selected {
+  background: var(--color-selection);
+}
+
+.validation-dropdown-item.selected {
+  background: var(--color-selection-border);
+  color: white;
+}
+
+/* Empty State */
+.validation-dropdown-empty {
+  padding: 8px 12px;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  text-align: center;
+}
+
+/* Dropdown Trigger Button */
+.validation-dropdown-trigger {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 18px;
+  border: none;
+  background: var(--color-surface);
+  border-left: 1px solid var(--color-border);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+
+/* Show trigger on cell hover */
+.cell:hover .validation-dropdown-trigger,
+.cell.selected .validation-dropdown-trigger,
+.validation-dropdown-trigger:focus,
+.validation-dropdown-trigger.active {
+  opacity: 1;
+}
+
+.validation-dropdown-trigger:hover {
+  background: var(--color-border-light);
+}
+
+.validation-dropdown-trigger:active,
+.validation-dropdown-trigger.active {
+  background: var(--color-border);
+}
+
+.validation-dropdown-trigger:focus {
+  outline: 2px solid var(--color-selection-border);
+  outline-offset: -2px;
+}
+
+/* Arrow Icon */
+.validation-dropdown-arrow {
+  font-size: 8px;
+  color: var(--color-text-secondary);
+  line-height: 1;
+}
+
+.validation-dropdown-trigger:hover .validation-dropdown-arrow,
+.validation-dropdown-trigger.active .validation-dropdown-arrow {
+  color: var(--color-text);
+}
+
+/* Scrollbar styling for dropdown */
+.validation-dropdown-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.validation-dropdown-list::-webkit-scrollbar-track {
+  background: var(--color-surface);
+}
+
+.validation-dropdown-list::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+.validation-dropdown-list::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}

@@ -1,0 +1,123 @@
+.virtual-grid {
+  display: grid;
+  grid-template-columns: var(--row-number-width) 1fr;
+  grid-template-rows: var(--header-height) 1fr;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  outline: none;
+}
+
+.virtual-grid:focus {
+  outline: none;
+}
+
+.grid-corner {
+  background: var(--color-header-bg);
+  border-right: 1px solid var(--color-header-border);
+  border-bottom: 1px solid var(--color-header-border);
+  z-index: calc(var(--z-header) + 1);
+}
+
+.column-headers-container {
+  overflow: hidden;
+  background: var(--color-header-bg);
+  border-bottom: 1px solid var(--color-header-border);
+  z-index: var(--z-header);
+}
+
+.column-headers {
+  position: relative;
+  height: var(--header-height);
+  will-change: transform;
+}
+
+.column-header {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  border-right: 1px solid var(--color-header-border);
+  font-size: var(--font-size-small);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.column-header.selected {
+  background: var(--color-selection);
+  color: var(--color-text);
+}
+
+.row-headers-container {
+  overflow: hidden;
+  background: var(--color-header-bg);
+  border-right: 1px solid var(--color-header-border);
+  z-index: var(--z-header);
+}
+
+.row-headers {
+  position: relative;
+  width: var(--row-number-width);
+  will-change: transform;
+}
+
+.row-header {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  border-bottom: 1px solid var(--color-grid-line);
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.row-header.selected {
+  background: var(--color-selection);
+  color: var(--color-text);
+}
+
+.grid-scroll-container {
+  overflow: auto;
+  position: relative;
+  will-change: scroll-position;
+}
+
+.grid-content {
+  position: relative;
+}
+
+.grid-cell {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  border-right: 1px solid var(--color-grid-line);
+  border-bottom: 1px solid var(--color-grid-line);
+  background: var(--color-background);
+  font-size: var(--font-size-base);
+  overflow: hidden;
+  cursor: cell;
+  box-sizing: border-box;
+  will-change: transform;
+}
+
+.cell-content {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.grid-cell.selected {
+  background: var(--color-background);
+}
+
+.grid-cell:hover:not(.selected) {
+  background: var(--color-surface);
+}

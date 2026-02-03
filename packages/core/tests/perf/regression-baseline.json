@@ -1,0 +1,175 @@
+{
+  "version": "1.0.0",
+  "generatedAt": "2024-01-15T10:00:00.000Z",
+  "description": "Performance baseline for MS Excel Clone regression detection",
+  "metrics": {
+    "scroll_fps": {
+      "value": 60,
+      "unit": "fps",
+      "timestamp": "2024-01-15T10:00:00.000Z",
+      "commit": "abc1234",
+      "systemInfo": {
+        "nodeVersion": "v20.10.0",
+        "platform": "darwin",
+        "arch": "arm64",
+        "cpuModel": "Apple M1",
+        "cpuCores": 8,
+        "totalMemory": "16GB"
+      }
+    },
+    "open_100k_cells": {
+      "value": 900,
+      "unit": "ms",
+      "timestamp": "2024-01-15T10:00:00.000Z",
+      "commit": "abc1234",
+      "systemInfo": {
+        "nodeVersion": "v20.10.0",
+        "platform": "darwin",
+        "arch": "arm64",
+        "cpuModel": "Apple M1",
+        "cpuCores": 8,
+        "totalMemory": "16GB"
+      }
+    },
+    "open_1m_cells": {
+      "value": 2800,
+      "unit": "ms",
+      "timestamp": "2024-01-15T10:00:00.000Z",
+      "commit": "abc1234",
+      "systemInfo": {
+        "nodeVersion": "v20.10.0",
+        "platform": "darwin",
+        "arch": "arm64",
+        "cpuModel": "Apple M1",
+        "cpuCores": 8,
+        "totalMemory": "16GB"
+      }
+    },
+    "recalc_10k_formulas": {
+      "value": 400,
+      "unit": "ms",
+      "timestamp": "2024-01-15T10:00:00.000Z",
+      "commit": "abc1234",
+      "systemInfo": {
+        "nodeVersion": "v20.10.0",
+        "platform": "darwin",
+        "arch": "arm64",
+        "cpuModel": "Apple M1",
+        "cpuCores": 8,
+        "totalMemory": "16GB"
+      }
+    },
+    "recalc_100k_formulas": {
+      "value": 1800,
+      "unit": "ms",
+      "timestamp": "2024-01-15T10:00:00.000Z",
+      "commit": "abc1234",
+      "systemInfo": {
+        "nodeVersion": "v20.10.0",
+        "platform": "darwin",
+        "arch": "arm64",
+        "cpuModel": "Apple M1",
+        "cpuCores": 8,
+        "totalMemory": "16GB"
+      }
+    },
+    "sort_10k_rows": {
+      "value": 180,
+      "unit": "ms",
+      "timestamp": "2024-01-15T10:00:00.000Z",
+      "commit": "abc1234",
+      "systemInfo": {
+        "nodeVersion": "v20.10.0",
+        "platform": "darwin",
+        "arch": "arm64",
+        "cpuModel": "Apple M1",
+        "cpuCores": 8,
+        "totalMemory": "16GB"
+      }
+    },
+    "sort_100k_rows": {
+      "value": 1800,
+      "unit": "ms",
+      "timestamp": "2024-01-15T10:00:00.000Z",
+      "commit": "abc1234",
+      "systemInfo": {
+        "nodeVersion": "v20.10.0",
+        "platform": "darwin",
+        "arch": "arm64",
+        "cpuModel": "Apple M1",
+        "cpuCores": 8,
+        "totalMemory": "16GB"
+      }
+    },
+    "filter_100k_rows": {
+      "value": 400,
+      "unit": "ms",
+      "timestamp": "2024-01-15T10:00:00.000Z",
+      "commit": "abc1234",
+      "systemInfo": {
+        "nodeVersion": "v20.10.0",
+        "platform": "darwin",
+        "arch": "arm64",
+        "cpuModel": "Apple M1",
+        "cpuCores": 8,
+        "totalMemory": "16GB"
+      }
+    },
+    "memory_100k_cells": {
+      "value": 85,
+      "unit": "MB",
+      "timestamp": "2024-01-15T10:00:00.000Z",
+      "commit": "abc1234",
+      "systemInfo": {
+        "nodeVersion": "v20.10.0",
+        "platform": "darwin",
+        "arch": "arm64",
+        "cpuModel": "Apple M1",
+        "cpuCores": 8,
+        "totalMemory": "16GB"
+      }
+    },
+    "memory_1m_cells": {
+      "value": 420,
+      "unit": "MB",
+      "timestamp": "2024-01-15T10:00:00.000Z",
+      "commit": "abc1234",
+      "systemInfo": {
+        "nodeVersion": "v20.10.0",
+        "platform": "darwin",
+        "arch": "arm64",
+        "cpuModel": "Apple M1",
+        "cpuCores": 8,
+        "totalMemory": "16GB"
+      }
+    },
+    "render_visible": {
+      "value": 80,
+      "unit": "ms",
+      "timestamp": "2024-01-15T10:00:00.000Z",
+      "commit": "abc1234",
+      "systemInfo": {
+        "nodeVersion": "v20.10.0",
+        "platform": "darwin",
+        "arch": "arm64",
+        "cpuModel": "Apple M1",
+        "cpuCores": 8,
+        "totalMemory": "16GB"
+      }
+    },
+    "deep_dependency_chain": {
+      "value": 850,
+      "unit": "ms",
+      "timestamp": "2024-01-15T10:00:00.000Z",
+      "commit": "abc1234",
+      "systemInfo": {
+        "nodeVersion": "v20.10.0",
+        "platform": "darwin",
+        "arch": "arm64",
+        "cpuModel": "Apple M1",
+        "cpuCores": 8,
+        "totalMemory": "16GB"
+      }
+    }
+  }
+}
