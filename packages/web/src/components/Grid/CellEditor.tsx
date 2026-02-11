@@ -11,16 +11,22 @@ interface CellEditorProps {
 
 export function CellEditor({ x, y, width, height }: CellEditorProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const { editValue, updateEditValue, commitEdit, cancelEdit, selectedCell } =
-    useSpreadsheetStore();
+  const { editValue, updateEditValue, commitEdit, cancelEdit, editTrigger } = useSpreadsheetStore();
 
   // Focus input on mount
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
-      inputRef.current.select();
+      if (editTrigger === 'type') {
+        // When entering edit mode via typing, place cursor at end (don't select all)
+        const len = inputRef.current.value.length;
+        inputRef.current.setSelectionRange(len, len);
+      } else {
+        // When entering via double-click or F2, select all existing text
+        inputRef.current.select();
+      }
     }
-  }, []);
+  }, [editTrigger]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -57,7 +63,7 @@ export function CellEditor({ x, y, width, height }: CellEditorProps) {
     <div
       className="cell-editor"
       style={{
-        transform: `translate(${x}px, ${y}px)`,
+        transform: `translate(${String(x)}px, ${String(y)}px)`,
         width: Math.max(width, 100),
         minHeight: height,
       }}

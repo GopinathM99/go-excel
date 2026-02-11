@@ -22,3 +22,12 @@
 .fill-handle:hover {
   background: var(--color-primary-hover);
 }
+
+.fill-preview {
+  position: absolute;
+  border: 2px dashed var(--color-selection-border);
+  background: rgba(0, 120, 212, 0.05);
+  box-sizing: border-box;
+  pointer-events: none;
+  z-index: var(--z-selection);
+}

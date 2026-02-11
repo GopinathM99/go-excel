@@ -18,6 +18,7 @@
   border: 1px solid transparent;
   padding: 0 4px;
   font-size: var(--font-size-base);
+  color: var(--color-text);
   text-align: center;
 }
 
@@ -49,6 +50,7 @@
   padding: 0 4px;
   font-size: var(--font-size-base);
   font-family: var(--font-family);
+  color: var(--color-text);
 }
 
 .formula-input:focus {

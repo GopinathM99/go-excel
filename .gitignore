@@ -17,6 +17,10 @@ coverage
 *.swp
 *.swo
 .DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.claude/
 
 # Environment
 .env
@@ -27,6 +31,8 @@ coverage
 *.log
 npm-debug.log*
 pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Temporary files
 tmp
@@ -35,8 +41,12 @@ temp
 
 # Electron
 release
+.electron-builder-cache/
 
 # Playwright
 test-results
 playwright-report
 playwright/.cache
+
+# Documentation
+docs/

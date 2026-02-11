@@ -1,9 +1,12 @@
-import { useRef, useCallback, useState, useEffect, useMemo, memo } from 'react';
-import { useSpreadsheetStore } from '../../store/spreadsheet';
-import { DEFAULT_COLUMN_WIDTH, DEFAULT_ROW_HEIGHT, VIRTUALIZATION_BUFFER } from '@excel/shared';
+import React, { useRef, useCallback, useState, useEffect, useMemo, memo } from 'react';
+import { useSpreadsheetStore, type CellStyle } from '../../store/spreadsheet';
+import { DEFAULT_ROW_HEIGHT, VIRTUALIZATION_BUFFER } from '@excel/shared';
 import { columnIndexToLabel } from '@excel/core';
 import { CellEditor } from './CellEditor';
 import { SelectionOverlay } from './SelectionOverlay';
+import { ColumnResizer } from './ColumnResizer';
+import { RowResizer } from './RowResizer';
+import { detectAndFill } from '../../utils/autoFill';
 import './VirtualGrid.css';
 
 interface VisibleRange {
@@ -22,6 +25,7 @@ interface CellProps {
   height: number;
   value: string;
   isSelected: boolean;
+  cellStyle?: CellStyle;
   onClick: (row: number, col: number, event: React.MouseEvent) => void;
   onDoubleClick: (row: number, col: number) => void;
 }
@@ -35,6 +39,7 @@ const GridCell = memo(function GridCell({
   height,
   value,
   isSelected,
+  cellStyle,
   onClick,
   onDoubleClick,
 }: CellProps) {
@@ -42,9 +47,12 @@ const GridCell = memo(function GridCell({
     <div
       className={`grid-cell ${isSelected ? 'selected' : ''}`}
       style={{
-        transform: `translate(${x}px, ${y}px)`,
+        transform: `translate(${String(x)}px, ${String(y)}px)`,
         width,
         height,
+        fontWeight: cellStyle?.bold ? 'bold' : undefined,
+        fontStyle: cellStyle?.italic ? 'italic' : undefined,
+        textDecoration: cellStyle?.underline ? 'underline' : undefined,
       }}
       onClick={(e) => onClick(row, col, e)}
       onDoubleClick={() => onDoubleClick(row, col)}
@@ -63,11 +71,19 @@ export function VirtualGrid() {
   const [scrollLeft, setScrollLeft] = useState(0);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 
+  // Drag selection state (refs to avoid re-renders during drag)
+  const isDraggingRef = useRef(false);
+  const dragStartCellRef = useRef<{ row: number; col: number } | null>(null);
+  const [isDragging, setIsDragging] = useState(false); // only for CSS class toggle
+
   const {
     rowCount,
     columnCount,
+    columnWidths: _columnWidths,
+    rowHeights: _rowHeights,
     getColumnWidth,
     getRowHeight,
+    cells: _cellData,
     getCellValue,
     selectedCell,
     setSelectedCell,
@@ -75,8 +91,10 @@ export function VirtualGrid() {
     setSelectionRange,
     editingCell,
     startEditing,
-    frozenRows,
-    frozenCols,
+    updateEditValue,
+    frozenRows: _frozenRows,
+    frozenCols: _frozenCols,
+    getCellStyle,
   } = useSpreadsheetStore();
 
   // Precompute column positions for efficient lookup
@@ -141,16 +159,17 @@ export function VirtualGrid() {
 
   // Calculate visible range using binary search
   const visibleRange = useMemo((): VisibleRange => {
-    const startRow = Math.max(0, findRowAtPosition(scrollTop) - VIRTUALIZATION_BUFFER);
+    const buffer = VIRTUALIZATION_BUFFER as number;
+    const startRow = Math.max(0, findRowAtPosition(scrollTop) - buffer);
     const endRow = Math.min(
       rowCount,
-      findRowAtPosition(scrollTop + containerSize.height) + VIRTUALIZATION_BUFFER + 1
+      findRowAtPosition(scrollTop + containerSize.height) + buffer + 1
     );
 
-    const startCol = Math.max(0, findColAtPosition(scrollLeft) - VIRTUALIZATION_BUFFER);
+    const startCol = Math.max(0, findColAtPosition(scrollLeft) - buffer);
     const endCol = Math.min(
       columnCount,
-      findColAtPosition(scrollLeft + containerSize.width) + VIRTUALIZATION_BUFFER + 1
+      findColAtPosition(scrollLeft + containerSize.width) + buffer + 1
     );
 
     return { startRow, endRow, startCol, endCol };
@@ -218,10 +237,334 @@ export function VirtualGrid() {
   // Handle double click to edit
   const handleCellDoubleClick = useCallback(
     (row: number, col: number) => {
-      startEditing(row, col);
+      startEditing(row, col, 'doubleclick');
     },
     [startEditing]
   );
+
+  // Convert mouse event to grid cell coordinates
+  const getCellFromMouseEvent = useCallback(
+    (e: MouseEvent | React.MouseEvent): { row: number; col: number } | null => {
+      const scrollContainer = scrollContainerRef.current;
+      if (!scrollContainer) return null;
+
+      const rect = scrollContainer.getBoundingClientRect();
+      const x = e.clientX - rect.left + scrollContainer.scrollLeft;
+      const y = e.clientY - rect.top + scrollContainer.scrollTop;
+
+      // Clamp to valid bounds
+      const row = Math.max(0, Math.min(rowCount - 1, findRowAtPosition(y)));
+      const col = Math.max(0, Math.min(columnCount - 1, findColAtPosition(x)));
+
+      return { row, col };
+    },
+    [rowCount, columnCount, findRowAtPosition, findColAtPosition]
+  );
+
+  // ---- Auto-fill drag state ----
+  const isFillDragging = useRef(false);
+  const fillSelectionBounds = useRef<{
+    minRow: number;
+    maxRow: number;
+    minCol: number;
+    maxCol: number;
+  } | null>(null);
+  const [fillPreview, setFillPreview] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null>(null);
+  // Track the current fill target for use in mouseup
+  const fillTargetRef = useRef<{
+    direction: 'down' | 'up' | 'right' | 'left';
+    minRow: number;
+    maxRow: number;
+    minCol: number;
+    maxCol: number;
+  } | null>(null);
+
+  // Fill drag start: triggered from the fill handle in SelectionOverlay
+  const handleFillDragStart = useCallback(
+    (_e: React.MouseEvent) => {
+      // Compute selection bounds
+      const startCell = selectionRange?.start ?? selectedCell;
+      const endCell = selectionRange?.end ?? selectedCell;
+      if (!startCell || !endCell) return;
+
+      const minRow = Math.min(startCell.row, endCell.row);
+      const maxRow = Math.max(startCell.row, endCell.row);
+      const minCol = Math.min(startCell.col, endCell.col);
+      const maxCol = Math.max(startCell.col, endCell.col);
+
+      isFillDragging.current = true;
+      fillSelectionBounds.current = { minRow, maxRow, minCol, maxCol };
+      fillTargetRef.current = null;
+    },
+    [selectedCell, selectionRange]
+  );
+
+  // Attach fill drag mousemove / mouseup to window
+  useEffect(() => {
+    const handleFillMouseMove = (e: MouseEvent) => {
+      if (!isFillDragging.current || !fillSelectionBounds.current) return;
+
+      const cell = getCellFromMouseEvent(e);
+      if (!cell) return;
+
+      const { minRow, maxRow, minCol, maxCol } = fillSelectionBounds.current;
+
+      // Determine which direction the user is dragging based on the cell position
+      const rowDelta =
+        cell.row > maxRow ? cell.row - maxRow : cell.row < minRow ? minRow - cell.row : 0;
+      const colDelta =
+        cell.col > maxCol ? cell.col - maxCol : cell.col < minCol ? minCol - cell.col : 0;
+
+      // If mouse is still within the selection bounds, clear preview
+      if (rowDelta === 0 && colDelta === 0) {
+        setFillPreview(null);
+        fillTargetRef.current = null;
+        return;
+      }
+
+      // Pick the dominant direction
+      let direction: 'down' | 'up' | 'right' | 'left';
+      let targetMinRow: number, targetMaxRow: number, targetMinCol: number, targetMaxCol: number;
+
+      if (rowDelta >= colDelta) {
+        // Vertical fill
+        if (cell.row > maxRow) {
+          direction = 'down';
+          targetMinRow = maxRow + 1;
+          targetMaxRow = cell.row;
+          targetMinCol = minCol;
+          targetMaxCol = maxCol;
+        } else {
+          direction = 'up';
+          targetMinRow = cell.row;
+          targetMaxRow = minRow - 1;
+          targetMinCol = minCol;
+          targetMaxCol = maxCol;
+        }
+      } else {
+        // Horizontal fill
+        if (cell.col > maxCol) {
+          direction = 'right';
+          targetMinRow = minRow;
+          targetMaxRow = maxRow;
+          targetMinCol = maxCol + 1;
+          targetMaxCol = cell.col;
+        } else {
+          direction = 'left';
+          targetMinRow = minRow;
+          targetMaxRow = maxRow;
+          targetMinCol = cell.col;
+          targetMaxCol = minCol - 1;
+        }
+      }
+
+      // Clamp to valid grid bounds
+      targetMinRow = Math.max(0, targetMinRow);
+      targetMaxRow = Math.min(rowCount - 1, targetMaxRow);
+      targetMinCol = Math.max(0, targetMinCol);
+      targetMaxCol = Math.min(columnCount - 1, targetMaxCol);
+
+      if (targetMinRow > targetMaxRow || targetMinCol > targetMaxCol) {
+        setFillPreview(null);
+        fillTargetRef.current = null;
+        return;
+      }
+
+      const previewX = columnPositions[targetMinCol] ?? 0;
+      const previewY = rowPositions[targetMinRow] ?? 0;
+      const previewW = (columnPositions[targetMaxCol + 1] ?? 0) - previewX;
+      const previewH = (rowPositions[targetMaxRow + 1] ?? 0) - previewY;
+
+      setFillPreview({ x: previewX, y: previewY, width: previewW, height: previewH });
+      fillTargetRef.current = {
+        direction,
+        minRow: targetMinRow,
+        maxRow: targetMaxRow,
+        minCol: targetMinCol,
+        maxCol: targetMaxCol,
+      };
+    };
+
+    const handleFillMouseUp = () => {
+      if (!isFillDragging.current) return;
+
+      const bounds = fillSelectionBounds.current;
+      const target = fillTargetRef.current;
+
+      isFillDragging.current = false;
+      fillSelectionBounds.current = null;
+      setFillPreview(null);
+
+      if (!bounds || !target) {
+        fillTargetRef.current = null;
+        return;
+      }
+
+      const store = useSpreadsheetStore.getState();
+      const updates: { row: number; col: number; value: string }[] = [];
+
+      if (target.direction === 'down' || target.direction === 'up') {
+        // For each column in the selection, gather source values and fill
+        for (let col = bounds.minCol; col <= bounds.maxCol; col++) {
+          const sourceValues: string[] = [];
+          if (target.direction === 'down') {
+            for (let r = bounds.minRow; r <= bounds.maxRow; r++) {
+              sourceValues.push(store.getCellValue(r, col));
+            }
+            const fillCount = target.maxRow - target.minRow + 1;
+            const filled = detectAndFill(sourceValues, fillCount);
+            for (let i = 0; i < filled.length; i++) {
+              updates.push({ row: target.minRow + i, col, value: filled[i] ?? '' });
+            }
+          } else {
+            // Filling upward: source values read top-to-bottom, then reverse to continue upward
+            for (let r = bounds.minRow; r <= bounds.maxRow; r++) {
+              sourceValues.push(store.getCellValue(r, col));
+            }
+            // Reverse source so the pattern continues upward from the top of the selection
+            sourceValues.reverse();
+            const fillCount = target.maxRow - target.minRow + 1;
+            const filled = detectAndFill(sourceValues, fillCount);
+            // Place values from bottom to top of the target area
+            for (let i = 0; i < filled.length; i++) {
+              updates.push({ row: target.maxRow - i, col, value: filled[i] ?? '' });
+            }
+          }
+        }
+      } else {
+        // Horizontal fill (right or left)
+        for (let row = bounds.minRow; row <= bounds.maxRow; row++) {
+          const sourceValues: string[] = [];
+          if (target.direction === 'right') {
+            for (let c = bounds.minCol; c <= bounds.maxCol; c++) {
+              sourceValues.push(store.getCellValue(row, c));
+            }
+            const fillCount = target.maxCol - target.minCol + 1;
+            const filled = detectAndFill(sourceValues, fillCount);
+            for (let i = 0; i < filled.length; i++) {
+              updates.push({ row, col: target.minCol + i, value: filled[i] ?? '' });
+            }
+          } else {
+            // Filling leftward
+            for (let c = bounds.minCol; c <= bounds.maxCol; c++) {
+              sourceValues.push(store.getCellValue(row, c));
+            }
+            sourceValues.reverse();
+            const fillCount = target.maxCol - target.minCol + 1;
+            const filled = detectAndFill(sourceValues, fillCount);
+            for (let i = 0; i < filled.length; i++) {
+              updates.push({ row, col: target.maxCol - i, value: filled[i] ?? '' });
+            }
+          }
+        }
+      }
+
+      if (updates.length > 0) {
+        store.setCellValues(updates);
+
+        // Expand selection range to include the filled cells
+        const newMinRow = Math.min(bounds.minRow, target.minRow);
+        const newMaxRow = Math.max(bounds.maxRow, target.maxRow);
+        const newMinCol = Math.min(bounds.minCol, target.minCol);
+        const newMaxCol = Math.max(bounds.maxCol, target.maxCol);
+
+        store.setSelectionRange({
+          start: { row: newMinRow, col: newMinCol },
+          end: { row: newMaxRow, col: newMaxCol },
+        });
+      }
+
+      fillTargetRef.current = null;
+    };
+
+    window.addEventListener('mousemove', handleFillMouseMove);
+    window.addEventListener('mouseup', handleFillMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleFillMouseMove);
+      window.removeEventListener('mouseup', handleFillMouseUp);
+    };
+  }, [getCellFromMouseEvent, rowCount, columnCount, columnPositions, rowPositions]);
+
+  // Handle mousedown on grid-scroll-container for drag selection
+  const handleGridMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      // Don't interfere with the fill-handle (used by fill/autofill feature)
+      const target = e.target as HTMLElement;
+      if (target.classList.contains('fill-handle')) return;
+
+      // Only handle left mouse button
+      if (e.button !== 0) return;
+
+      // Don't start drag if we're editing
+      if (editingCell) return;
+
+      const cell = getCellFromMouseEvent(e);
+      if (!cell) return;
+
+      // Handle shift+click for range selection (keep existing behavior)
+      if (e.shiftKey && selectedCell) {
+        setSelectionRange({
+          start: selectedCell,
+          end: cell,
+        });
+        return;
+      }
+
+      // Start drag tracking
+      isDraggingRef.current = true;
+      dragStartCellRef.current = cell;
+      setIsDragging(true);
+
+      // Set the clicked cell as selected immediately
+      setSelectedCell(cell);
+    },
+    [editingCell, selectedCell, getCellFromMouseEvent, setSelectedCell, setSelectionRange]
+  );
+
+  // Attach mousemove and mouseup to window for smooth drag selection
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDraggingRef.current || !dragStartCellRef.current) return;
+
+      const cell = getCellFromMouseEvent(e);
+      if (!cell) return;
+
+      const start = dragStartCellRef.current;
+
+      // Only set selection range if the mouse has moved to a different cell
+      if (cell.row !== start.row || cell.col !== start.col) {
+        setSelectionRange({
+          start: start,
+          end: cell,
+        });
+      } else {
+        // Mouse is back on the start cell, clear the range
+        setSelectionRange(null);
+      }
+    };
+
+    const handleMouseUp = (_e: MouseEvent) => {
+      if (!isDraggingRef.current) return;
+
+      isDraggingRef.current = false;
+      dragStartCellRef.current = null;
+      setIsDragging(false);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [getCellFromMouseEvent, setSelectionRange]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -284,10 +627,23 @@ export function VirtualGrid() {
           );
           break;
         case 'F2':
-          startEditing(selectedCell.row, selectedCell.col);
+          startEditing(selectedCell.row, selectedCell.col, 'f2');
+          e.preventDefault();
+          return;
+        case 'Delete':
+        case 'Backspace':
+          startEditing(selectedCell.row, selectedCell.col, 'type');
+          updateEditValue('');
           e.preventDefault();
           return;
         default:
+          // Start editing on printable character input
+          if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            startEditing(selectedCell.row, selectedCell.col, 'type');
+            updateEditValue(e.key);
+            e.preventDefault();
+            return;
+          }
           handled = false;
       }
 
@@ -321,6 +677,8 @@ export function VirtualGrid() {
     setSelectedCell,
     setSelectionRange,
     startEditing,
+    updateEditValue,
+    scrollToCell,
   ]);
 
   // Scroll to cell function
@@ -364,12 +722,20 @@ export function VirtualGrid() {
         });
       }
     },
-    [scrollTop, scrollLeft, containerSize, rowPositions, columnPositions, getRowHeight, getColumnWidth]
+    [
+      scrollTop,
+      scrollLeft,
+      containerSize,
+      rowPositions,
+      columnPositions,
+      getRowHeight,
+      getColumnWidth,
+    ]
   );
 
   // Render cells
   const cells = useMemo(() => {
-    const result: JSX.Element[] = [];
+    const result: React.JSX.Element[] = [];
     const { startRow, endRow, startCol, endCol } = visibleRange;
 
     for (let row = startRow; row < endRow; row++) {
@@ -380,11 +746,12 @@ export function VirtualGrid() {
         const x = columnPositions[col] ?? 0;
         const width = getColumnWidth(col);
         const value = getCellValue(row, col);
-        const isSelected = selectedCell?.row === row && selectedCell?.col === col;
+        const isSelected = selectedCell?.row === row && selectedCell.col === col;
+        const style = getCellStyle(row, col);
 
         result.push(
           <GridCell
-            key={`${row}-${col}`}
+            key={`${String(row)}-${String(col)}`}
             row={row}
             col={col}
             x={x}
@@ -393,6 +760,7 @@ export function VirtualGrid() {
             height={height}
             value={value}
             isSelected={isSelected}
+            cellStyle={style}
             onClick={handleCellClick}
             onDoubleClick={handleCellDoubleClick}
           />
@@ -408,6 +776,7 @@ export function VirtualGrid() {
     getRowHeight,
     getColumnWidth,
     getCellValue,
+    getCellStyle,
     selectedCell,
     handleCellClick,
     handleCellDoubleClick,
@@ -415,7 +784,7 @@ export function VirtualGrid() {
 
   // Render row headers
   const rowHeaders = useMemo(() => {
-    const result: JSX.Element[] = [];
+    const result: React.JSX.Element[] = [];
     const { startRow, endRow } = visibleRange;
 
     for (let row = startRow; row < endRow; row++) {
@@ -425,16 +794,19 @@ export function VirtualGrid() {
 
       result.push(
         <div
-          key={`row-${row}`}
+          key={`row-${String(row)}`}
           className={`row-header ${isSelected ? 'selected' : ''}`}
           style={{
-            transform: `translateY(${y}px)`,
+            transform: `translateY(${String(y)}px)`,
             height,
           }}
         >
           {row + 1}
         </div>
       );
+
+      // Render row resizer at the bottom edge of the row header
+      result.push(<RowResizer key={`row-resizer-${String(row)}`} row={row} y={y + height} />);
     }
 
     return result;
@@ -442,7 +814,7 @@ export function VirtualGrid() {
 
   // Render column headers
   const columnHeaders = useMemo(() => {
-    const result: JSX.Element[] = [];
+    const result: React.JSX.Element[] = [];
     const { startCol, endCol } = visibleRange;
 
     for (let col = startCol; col < endCol; col++) {
@@ -452,16 +824,19 @@ export function VirtualGrid() {
 
       result.push(
         <div
-          key={`col-${col}`}
+          key={`col-${String(col)}`}
           className={`column-header ${isSelected ? 'selected' : ''}`}
           style={{
-            transform: `translateX(${x}px)`,
+            transform: `translateX(${String(x)}px)`,
             width,
           }}
         >
-          {columnIndexToLabel(col)}
+          {(columnIndexToLabel as (col: number) => string)(col)}
         </div>
       );
+
+      // Render column resizer at the right edge of the column header
+      result.push(<ColumnResizer key={`col-resizer-${String(col)}`} col={col} x={x + width} />);
     }
 
     return result;
@@ -511,7 +886,7 @@ export function VirtualGrid() {
         <div
           className="column-headers"
           style={{
-            transform: `translateX(${-scrollLeft}px)`,
+            transform: `translateX(${String(-scrollLeft)}px)`,
             width: totalWidth,
           }}
         >
@@ -524,7 +899,7 @@ export function VirtualGrid() {
         <div
           className="row-headers"
           style={{
-            transform: `translateY(${-scrollTop}px)`,
+            transform: `translateY(${String(-scrollTop)}px)`,
             height: totalHeight,
           }}
         >
@@ -534,9 +909,10 @@ export function VirtualGrid() {
 
       {/* Scrollable cell area */}
       <div
-        className="grid-scroll-container"
+        className={`grid-scroll-container${isDragging ? ' is-dragging' : ''}`}
         ref={scrollContainerRef}
         onScroll={handleScroll}
+        onMouseDown={handleGridMouseDown}
       >
         <div
           className="grid-content"
@@ -554,6 +930,8 @@ export function VirtualGrid() {
               y={selectionBox.y}
               width={selectionBox.width}
               height={selectionBox.height}
+              onFillDragStart={handleFillDragStart}
+              fillPreview={fillPreview}
             />
           )}
 

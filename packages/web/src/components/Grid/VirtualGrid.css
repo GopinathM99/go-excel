@@ -89,6 +89,12 @@
   will-change: scroll-position;
 }
 
+.grid-scroll-container.is-dragging,
+.grid-scroll-container.is-dragging * {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 .grid-content {
   position: relative;
 }
@@ -101,6 +107,7 @@
   border-right: 1px solid var(--color-grid-line);
   border-bottom: 1px solid var(--color-grid-line);
   background: var(--color-background);
+  color: var(--color-text);
   font-size: var(--font-size-base);
   overflow: hidden;
   cursor: cell;
