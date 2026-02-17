@@ -1,5 +1,5 @@
 /**
- * @excel/server - WebSocket collaboration server for the MS Excel Clone
+ * @excel/server - WebSocket collaboration server for Go Excel
  *
  * Entry point for the collaboration server
  */
@@ -84,7 +84,7 @@ function parseArgs(): Partial<ServerOptions> {
 Usage: node dist/index.js [options]
 
 Options:
-  -p, --port <number>   Port to listen on (default: ${DEFAULT_PORT})
+  -p, --port <number>   Port to listen on (default: ${String(DEFAULT_PORT)})
   -h, --host <string>   Host to bind to (default: all interfaces)
       --path <string>   WebSocket path (default: /)
       --help            Show this help message
@@ -142,8 +142,12 @@ async function main(): Promise<void> {
     }
   };
 
-  process.on('SIGINT', () => shutdown('SIGINT'));
-  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => {
+    void shutdown('SIGINT');
+  });
+  process.on('SIGTERM', () => {
+    void shutdown('SIGTERM');
+  });
 
   try {
     await server.start();
@@ -153,7 +157,7 @@ async function main(): Promise<void> {
       const stats = server.getStats();
       if (stats.connectedClients > 0 || stats.roomStats.roomCount > 0) {
         console.log(
-          `Stats: ${stats.connectedClients} clients, ${stats.roomStats.roomCount} rooms`
+          `Stats: ${String(stats.connectedClients)} clients, ${String(stats.roomStats.roomCount)} rooms`
         );
       }
     }, 60000); // Every minute
@@ -164,7 +168,7 @@ async function main(): Promise<void> {
 }
 
 // Run the server
-main().catch((error) => {
+main().catch((error: unknown) => {
   console.error('Unhandled error:', error);
   process.exit(1);
 });

@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "generatedAt": "2024-01-15T10:00:00.000Z",
-  "description": "Performance baseline for MS Excel Clone regression detection",
+  "description": "Performance baseline for Go Excel regression detection",
   "metrics": {
     "scroll_fps": {
       "value": 60,

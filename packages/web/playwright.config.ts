@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Playwright configuration for MS Excel Clone E2E tests.
+ * Playwright configuration for Go Excel E2E tests.
  *
  * @see https://playwright.dev/docs/test-configuration
  */
@@ -23,7 +23,10 @@ export default defineConfig({
 
   // Reporter configuration
   reporter: process.env['CI']
-    ? [['junit', { outputFile: 'test-results/junit.xml' }], ['html', { open: 'never' }]]
+    ? [
+        ['junit', { outputFile: 'test-results/junit.xml' }],
+        ['html', { open: 'never' }],
+      ]
     : [['html', { open: 'on-failure' }], ['list']],
 
   // Global timeout for each test

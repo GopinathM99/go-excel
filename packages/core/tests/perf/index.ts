@@ -37,7 +37,7 @@ export const BENCHMARK_SUITES = [
 /**
  * Performance Targets Summary
  *
- * These are the key metrics that the MS Excel Clone should meet:
+ * These are the key metrics that Go Excel should meet:
  *
  * | Metric                  | Target        |
  * |-------------------------|---------------|

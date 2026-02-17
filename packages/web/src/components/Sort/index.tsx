@@ -1,7 +1,7 @@
 /**
  * Sort Components
  *
- * React components for sort functionality in the MS Excel Clone.
+ * React components for sort functionality in Go Excel.
  *
  * Components:
  * - SortDialog: Modal dialog for configuring multi-column sort

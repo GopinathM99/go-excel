@@ -5,16 +5,12 @@
  * and running benchmarks with statistical analysis.
  */
 
-import {
-  createSheet,
-  setCell,
-  type Sheet,
-} from '../../src/models/Sheet';
+import { createSheet, setCell, type Sheet } from '../../src/models/Sheet';
 import { createCell } from '../../src/models/Cell';
 import { numberValue, stringValue } from '../../src/models/CellValue';
 
 /**
- * Performance targets for the MS Excel Clone
+ * Performance targets for Go Excel
  */
 export const PERFORMANCE_TARGETS = {
   /** Scroll FPS target */
@@ -186,8 +182,12 @@ function getMemoryUsage(): number {
     return process.memoryUsage().heapUsed;
   }
   // Fallback for browser environment
-  if (typeof performance !== 'undefined' && (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory) {
-    return (performance as Performance & { memory: { usedJSHeapSize: number } }).memory.usedJSHeapSize;
+  if (
+    typeof performance !== 'undefined' &&
+    (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory
+  ) {
+    return (performance as Performance & { memory: { usedJSHeapSize: number } }).memory
+      .usedJSHeapSize;
   }
   return 0;
 }
@@ -226,9 +226,7 @@ export function runBenchmark(
 
   // Median
   const mid = Math.floor(sorted.length / 2);
-  const median = sorted.length % 2 !== 0
-    ? sorted[mid]!
-    : (sorted[mid - 1]! + sorted[mid]!) / 2;
+  const median = sorted.length % 2 !== 0 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2;
 
   // Standard deviation
   const squaredDiffs = samples.map((s) => Math.pow(s - mean, 2));
@@ -302,11 +300,7 @@ export function createLargeSheet(
     mixedTypes?: boolean;
   } = {}
 ): Sheet {
-  const {
-    withFormulas = false,
-    formulaRatio = 0.1,
-    mixedTypes = true,
-  } = options;
+  const { withFormulas = false, formulaRatio = 0.1, mixedTypes = true } = options;
 
   let sheet = createSheet('Benchmark');
 
@@ -332,11 +326,7 @@ export function createLargeSheet(
           sheet = setCell(sheet, cell);
         } else if (typeRandom < 0.9) {
           // 30% strings
-          const cell = createCell(
-            address,
-            `Text_${row}_${col}`,
-            stringValue(`Text_${row}_${col}`)
-          );
+          const cell = createCell(address, `Text_${row}_${col}`, stringValue(`Text_${row}_${col}`));
           sheet = setCell(sheet, cell);
         } else {
           // 10% empty cells
@@ -344,11 +334,7 @@ export function createLargeSheet(
         }
       } else {
         // All numbers
-        const cell = createCell(
-          address,
-          String(row * cols + col),
-          numberValue(row * cols + col)
-        );
+        const cell = createCell(address, String(row * cols + col), numberValue(row * cols + col));
         sheet = setCell(sheet, cell);
       }
     }
@@ -369,11 +355,7 @@ export function createSheetWithFormulas(rows: number, cols: number): Sheet {
 
   // First row: base values
   for (let col = 0; col < cols; col++) {
-    const cell = createCell(
-      { row: 0, col },
-      String(col + 1),
-      numberValue(col + 1)
-    );
+    const cell = createCell({ row: 0, col }, String(col + 1), numberValue(col + 1));
     sheet = setCell(sheet, cell);
   }
 
@@ -420,13 +402,7 @@ export function createDeepDependencyChain(depth: number): Sheet {
  * @returns Formatted string
  */
 export function reportResults(results: BenchmarkResult[]): string {
-  const lines: string[] = [
-    '',
-    '='.repeat(80),
-    'PERFORMANCE BENCHMARK RESULTS',
-    '='.repeat(80),
-    '',
-  ];
+  const lines: string[] = ['', '='.repeat(80), 'PERFORMANCE BENCHMARK RESULTS', '='.repeat(80), ''];
 
   const passed = results.filter((r) => r.passed).length;
   const failed = results.filter((r) => !r.passed).length;
@@ -483,7 +459,9 @@ export function sleep(ms: number): Promise<void> {
 /**
  * Generates random cell data for testing
  */
-export function generateRandomCellData(count: number): Array<{ row: number; col: number; value: number }> {
+export function generateRandomCellData(
+  count: number
+): Array<{ row: number; col: number; value: number }> {
   const data: Array<{ row: number; col: number; value: number }> = [];
   for (let i = 0; i < count; i++) {
     data.push({

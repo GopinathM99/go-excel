@@ -330,9 +330,7 @@ function createBenchmarkResult(
       ? sorted[Math.floor(sorted.length / 2)]!
       : (sorted[sorted.length / 2 - 1]! + sorted[sorted.length / 2]!) / 2;
   const squaredDiffs = samples.map((s) => Math.pow(s - mean, 2));
-  const stdDev = Math.sqrt(
-    squaredDiffs.reduce((a, b) => a + b, 0) / samples.length
-  );
+  const stdDev = Math.sqrt(squaredDiffs.reduce((a, b) => a + b, 0) / samples.length);
 
   const target = PERFORMANCE_TARGETS.find((t) => t.metric === metric);
 
@@ -358,10 +356,7 @@ function createBenchmarkResult(
 // ============================================================================
 
 function loadBaseline(): BaselineFile | null {
-  const baselinePath = path.resolve(
-    __dirname,
-    '../tests/perf/regression-baseline.json'
-  );
+  const baselinePath = path.resolve(__dirname, '../tests/perf/regression-baseline.json');
   try {
     const content = fs.readFileSync(baselinePath, 'utf-8');
     return JSON.parse(content) as BaselineFile;
@@ -371,10 +366,7 @@ function loadBaseline(): BaselineFile | null {
 }
 
 function saveBaseline(results: BenchmarkResult[]): void {
-  const baselinePath = path.resolve(
-    __dirname,
-    '../tests/perf/regression-baseline.json'
-  );
+  const baselinePath = path.resolve(__dirname, '../tests/perf/regression-baseline.json');
   const systemInfo = getSystemInfo();
   const commit = getGitCommit();
   const timestamp = new Date().toISOString();
@@ -477,10 +469,7 @@ function validateResults(
 // Output Formatting
 // ============================================================================
 
-function printResults(
-  results: ValidationResult[],
-  verbose: boolean
-): void {
+function printResults(results: ValidationResult[], verbose: boolean): void {
   console.log('\n' + '='.repeat(80));
   console.log('PERFORMANCE VALIDATION RESULTS');
   console.log('='.repeat(80) + '\n');
@@ -508,12 +497,8 @@ function printResults(
         console.log(`       Target: ${result.target}${result.unit}`);
         console.log(`       Actual: ${result.actual.toFixed(2)}${result.unit}`);
         if (result.baselineValue !== undefined) {
-          console.log(
-            `       Baseline: ${result.baselineValue.toFixed(2)}${result.unit}`
-          );
-          console.log(
-            `       Delta: ${result.baselineDeltaPercent?.toFixed(1)}%`
-          );
+          console.log(`       Baseline: ${result.baselineValue.toFixed(2)}${result.unit}`);
+          console.log(`       Delta: ${result.baselineDeltaPercent?.toFixed(1)}%`);
         }
       }
     }
@@ -522,18 +507,12 @@ function printResults(
 
   // Summary
   console.log('-'.repeat(80));
-  console.log(
-    `Summary: ${passed.length} passed, ${failed.length} failed, ${results.length} total`
-  );
+  console.log(`Summary: ${passed.length} passed, ${failed.length} failed, ${results.length} total`);
 
   if (failed.length > 0) {
     console.log('\nAction Required:');
-    console.log(
-      '  Review the failed metrics above and optimize the affected code paths.'
-    );
-    console.log(
-      '  If the regressions are expected, update the baseline with: --update-baseline'
-    );
+    console.log('  Review the failed metrics above and optimize the affected code paths.');
+    console.log('  If the regressions are expected, update the baseline with: --update-baseline');
   }
 
   console.log('='.repeat(80) + '\n');
@@ -582,7 +561,7 @@ async function main(): Promise<void> {
   }
 
   console.log('\n' + '='.repeat(80));
-  console.log('MS EXCEL CLONE - PERFORMANCE VALIDATION');
+  console.log('GO EXCEL - PERFORMANCE VALIDATION');
   console.log('='.repeat(80));
 
   const systemInfo = getSystemInfo();
@@ -603,17 +582,11 @@ async function main(): Promise<void> {
   if (baseline) {
     console.log(`\n  Baseline loaded from: ${baseline.generatedAt}`);
   } else {
-    console.log(
-      '\n  No baseline found. Run with --update-baseline to create one.'
-    );
+    console.log('\n  No baseline found. Run with --update-baseline to create one.');
   }
 
   // Validate results
-  const validationResults = validateResults(
-    benchmarkResults,
-    baseline,
-    args.threshold
-  );
+  const validationResults = validateResults(benchmarkResults, baseline, args.threshold);
 
   // Print results
   printResults(validationResults, args.verbose);
@@ -631,9 +604,7 @@ async function main(): Promise<void> {
   // Exit with error code if any tests failed
   const failedCount = validationResults.filter((r) => !r.passed).length;
   if (failedCount > 0) {
-    console.log(
-      `\nExiting with error: ${failedCount} performance target(s) not met.\n`
-    );
+    console.log(`\nExiting with error: ${failedCount} performance target(s) not met.\n`);
     process.exit(1);
   }
 

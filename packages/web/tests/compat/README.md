@@ -1,17 +1,17 @@
 # Cross-Browser Compatibility Tests
 
-This directory contains comprehensive cross-browser compatibility tests for the MS Excel Clone web application. The tests ensure consistent behavior and appearance across Chrome, Firefox, Safari (WebKit), and Microsoft Edge.
+This directory contains comprehensive cross-browser compatibility tests for the Go Excel web application. The tests ensure consistent behavior and appearance across Chrome, Firefox, Safari (WebKit), and Microsoft Edge.
 
 ## Supported Browsers
 
-| Browser | Minimum Version | Status |
-|---------|-----------------|--------|
-| Chrome | 90+ | Fully Supported |
-| Firefox | 88+ | Fully Supported |
-| Safari | 14+ | Fully Supported |
-| Edge | 90+ | Fully Supported |
-| Mobile Chrome | Latest | Supported |
-| Mobile Safari | Latest | Supported |
+| Browser       | Minimum Version | Status          |
+| ------------- | --------------- | --------------- |
+| Chrome        | 90+             | Fully Supported |
+| Firefox       | 88+             | Fully Supported |
+| Safari        | 14+             | Fully Supported |
+| Edge          | 90+             | Fully Supported |
+| Mobile Chrome | Latest          | Supported       |
+| Mobile Safari | Latest          | Supported       |
 
 ## Test Suites
 
@@ -39,6 +39,7 @@ Tests clipboard operations with browser-specific handling:
 - Data format handling (text/plain, text/html)
 
 **Known Browser Differences:**
+
 - Chrome/Edge: Full Clipboard API support
 - Firefox: Requires user gesture for clipboard access
 - Safari: Limited Clipboard API, relies more on execCommand
@@ -284,10 +285,10 @@ The compatibility tests use a dedicated Playwright configuration (`playwright.co
 
 ### Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `CI` | Running in CI environment | `false` |
-| `BASE_URL` | Application URL | `http://localhost:3000` |
+| Variable   | Description               | Default                 |
+| ---------- | ------------------------- | ----------------------- |
+| `CI`       | Running in CI environment | `false`                 |
+| `BASE_URL` | Application URL           | `http://localhost:3000` |
 
 ## Continuous Integration
 

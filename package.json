@@ -1,5 +1,5 @@
 {
-  "name": "ms-excel",
+  "name": "go-excel",
   "version": "0.1.0",
   "private": true,
   "description": "A full-featured spreadsheet application for web and desktop",

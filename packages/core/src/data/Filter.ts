@@ -1,5 +1,5 @@
 /**
- * Auto-filter functionality for MS Excel Clone
+ * Auto-filter functionality for Go Excel
  * Supports value-based and condition-based filtering
  */
 
@@ -168,8 +168,8 @@ function numericCompare(
     return false;
   }
 
-  const num1 = typeof value1 === 'number' ? value1 : parseFloat(String(value1 ?? ''));
-  const num2 = typeof value2 === 'number' ? value2 : parseFloat(String(value2 ?? ''));
+  const num1 = typeof value1 === 'number' ? value1 : parseFloat(value1 ?? '');
+  const num2 = typeof value2 === 'number' ? value2 : parseFloat(value2 ?? '');
 
   switch (operator) {
     case 'equals':
@@ -264,8 +264,7 @@ function matchesCondition(cellValue: CellValue, condition: FilterCondition): boo
   if (numericOperators.includes(operator)) {
     // Try numeric comparison if both cell and value are numeric
     const cellNum = getCellNumericValue(cellValue);
-    const val1Num =
-      typeof value1 === 'number' ? value1 : parseFloat(String(value1 ?? ''));
+    const val1Num = typeof value1 === 'number' ? value1 : parseFloat(value1 ?? '');
 
     if (cellNum !== null && !isNaN(val1Num)) {
       return numericCompare(cellValue, operator, value1, value2);
@@ -280,8 +279,12 @@ function matchesCondition(cellValue: CellValue, condition: FilterCondition): boo
   }
 
   // These operators are handled separately in applyFilter
-  if (operator === 'top10' || operator === 'bottom10' ||
-      operator === 'aboveAverage' || operator === 'belowAverage') {
+  if (
+    operator === 'top10' ||
+    operator === 'bottom10' ||
+    operator === 'aboveAverage' ||
+    operator === 'belowAverage'
+  ) {
     return true; // Will be evaluated with full column data
   }
 
@@ -310,25 +313,18 @@ function rowMatchesColumnFilter(
     return columnFilter.values.has(displayValue);
   }
 
-  if (columnFilter.type === 'condition') {
-    if (!columnFilter.conditions || columnFilter.conditions.length === 0) {
-      return true; // No conditions
-    }
-
-    const logic = columnFilter.conditionLogic ?? 'and';
-
-    if (logic === 'and') {
-      return columnFilter.conditions.every((cond) =>
-        matchesCondition(cellValue, cond)
-      );
-    } else {
-      return columnFilter.conditions.some((cond) =>
-        matchesCondition(cellValue, cond)
-      );
-    }
+  // columnFilter.type must be 'condition' at this point
+  if (!columnFilter.conditions || columnFilter.conditions.length === 0) {
+    return true; // No conditions
   }
 
-  return true;
+  const logic = columnFilter.conditionLogic ?? 'and';
+
+  if (logic === 'and') {
+    return columnFilter.conditions.every((cond) => matchesCondition(cellValue, cond));
+  } else {
+    return columnFilter.conditions.some((cond) => matchesCondition(cellValue, cond));
+  }
 }
 
 /**
@@ -393,17 +389,13 @@ function applyStatisticalFilter(
     case 'aboveAverage': {
       const sum = columnValues.reduce((acc, v) => acc + v.value, 0);
       const avg = sum / columnValues.length;
-      matchingRows = new Set(
-        columnValues.filter((v) => v.value > avg).map((v) => v.row)
-      );
+      matchingRows = new Set(columnValues.filter((v) => v.value > avg).map((v) => v.row));
       break;
     }
     case 'belowAverage': {
       const sum = columnValues.reduce((acc, v) => acc + v.value, 0);
       const avg = sum / columnValues.length;
-      matchingRows = new Set(
-        columnValues.filter((v) => v.value < avg).map((v) => v.row)
-      );
+      matchingRows = new Set(columnValues.filter((v) => v.value < avg).map((v) => v.row));
       break;
     }
     default:
@@ -426,12 +418,7 @@ function hasStatisticalOperator(columnFilter: ColumnFilter): FilterOperator | nu
     return null;
   }
 
-  const statisticalOps: FilterOperator[] = [
-    'top10',
-    'bottom10',
-    'aboveAverage',
-    'belowAverage',
-  ];
+  const statisticalOps: FilterOperator[] = ['top10', 'bottom10', 'aboveAverage', 'belowAverage'];
 
   for (const cond of columnFilter.conditions) {
     if (statisticalOps.includes(cond.operator)) {
@@ -502,11 +489,7 @@ export function applyFilter(sheet: Sheet, filter: AutoFilter): FilterResult {
  * Gets unique values in a column for the filter dropdown
  * Returns values sorted alphabetically
  */
-export function getUniqueValues(
-  sheet: Sheet,
-  range: CellRange,
-  column: number
-): string[] {
+export function getUniqueValues(sheet: Sheet, range: CellRange, column: number): string[] {
   const uniqueValues = new Set<string>();
 
   // Skip header row (first row of range)

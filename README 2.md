@@ -1,4 +1,4 @@
-# MS Excel Clone
+# Go Excel
 
 A full-featured spreadsheet application for web and desktop, built with TypeScript, React, and Electron. Targets Excel-class functionality with real-time collaboration, a robust formula engine, and high-performance virtualized rendering.
 
@@ -64,7 +64,7 @@ A full-featured spreadsheet application for web and desktop, built with TypeScri
 ## Project Structure
 
 ```
-ms-excel/
+go-excel/
 ├── packages/
 │   ├── shared/       # Shared types, utils, and constants
 │   ├── core/         # Workbook model, formula engine, commands, I/O
@@ -101,7 +101,7 @@ ms-excel/
 ```bash
 # Clone the repository
 git clone <repo-url>
-cd ms-excel
+cd go-excel
 
 # Install dependencies
 pnpm install

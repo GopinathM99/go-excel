@@ -566,6 +566,58 @@ export function VirtualGrid() {
     };
   }, [getCellFromMouseEvent, setSelectionRange]);
 
+  // Scroll to cell function
+  const scrollToCell = useCallback(
+    (row: number, col: number) => {
+      const scrollContainer = scrollContainerRef.current;
+      if (!scrollContainer) return;
+
+      const cellTop = rowPositions[row] ?? 0;
+      const cellLeft = columnPositions[col] ?? 0;
+      const cellHeight = getRowHeight(row);
+      const cellWidth = getColumnWidth(col);
+
+      const visibleTop = scrollTop;
+      const visibleBottom = scrollTop + containerSize.height;
+      const visibleLeft = scrollLeft;
+      const visibleRight = scrollLeft + containerSize.width;
+
+      let newScrollTop = scrollTop;
+      let newScrollLeft = scrollLeft;
+
+      // Vertical scrolling
+      if (cellTop < visibleTop) {
+        newScrollTop = cellTop;
+      } else if (cellTop + cellHeight > visibleBottom) {
+        newScrollTop = cellTop + cellHeight - containerSize.height;
+      }
+
+      // Horizontal scrolling
+      if (cellLeft < visibleLeft) {
+        newScrollLeft = cellLeft;
+      } else if (cellLeft + cellWidth > visibleRight) {
+        newScrollLeft = cellLeft + cellWidth - containerSize.width;
+      }
+
+      if (newScrollTop !== scrollTop || newScrollLeft !== scrollLeft) {
+        scrollContainer.scrollTo({
+          top: newScrollTop,
+          left: newScrollLeft,
+          behavior: 'auto',
+        });
+      }
+    },
+    [
+      scrollTop,
+      scrollLeft,
+      containerSize,
+      rowPositions,
+      columnPositions,
+      getRowHeight,
+      getColumnWidth,
+    ]
+  );
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -680,58 +732,6 @@ export function VirtualGrid() {
     updateEditValue,
     scrollToCell,
   ]);
-
-  // Scroll to cell function
-  const scrollToCell = useCallback(
-    (row: number, col: number) => {
-      const scrollContainer = scrollContainerRef.current;
-      if (!scrollContainer) return;
-
-      const cellTop = rowPositions[row] ?? 0;
-      const cellLeft = columnPositions[col] ?? 0;
-      const cellHeight = getRowHeight(row);
-      const cellWidth = getColumnWidth(col);
-
-      const visibleTop = scrollTop;
-      const visibleBottom = scrollTop + containerSize.height;
-      const visibleLeft = scrollLeft;
-      const visibleRight = scrollLeft + containerSize.width;
-
-      let newScrollTop = scrollTop;
-      let newScrollLeft = scrollLeft;
-
-      // Vertical scrolling
-      if (cellTop < visibleTop) {
-        newScrollTop = cellTop;
-      } else if (cellTop + cellHeight > visibleBottom) {
-        newScrollTop = cellTop + cellHeight - containerSize.height;
-      }
-
-      // Horizontal scrolling
-      if (cellLeft < visibleLeft) {
-        newScrollLeft = cellLeft;
-      } else if (cellLeft + cellWidth > visibleRight) {
-        newScrollLeft = cellLeft + cellWidth - containerSize.width;
-      }
-
-      if (newScrollTop !== scrollTop || newScrollLeft !== scrollLeft) {
-        scrollContainer.scrollTo({
-          top: newScrollTop,
-          left: newScrollLeft,
-          behavior: 'auto',
-        });
-      }
-    },
-    [
-      scrollTop,
-      scrollLeft,
-      containerSize,
-      rowPositions,
-      columnPositions,
-      getRowHeight,
-      getColumnWidth,
-    ]
-  );
 
   // Render cells
   const cells = useMemo(() => {

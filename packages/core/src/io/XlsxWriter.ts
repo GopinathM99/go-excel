@@ -34,10 +34,7 @@ export async function writeXlsx(workbook: Workbook): Promise<Buffer> {
  * @param workbook - The workbook to export
  * @param filePath - The path to write the file to
  */
-export async function writeXlsxToFile(
-  workbook: Workbook,
-  filePath: string
-): Promise<void> {
+export async function writeXlsxToFile(workbook: Workbook, filePath: string): Promise<void> {
   const excelWorkbook = createExcelWorkbook(workbook);
   await excelWorkbook.xlsx.writeFile(filePath);
 }
@@ -49,8 +46,9 @@ function createExcelWorkbook(workbook: Workbook): ExcelJS.Workbook {
   const excelWorkbook = new ExcelJS.Workbook();
 
   // Set workbook properties
-  excelWorkbook.creator = workbook.properties.author ?? 'MS Excel Clone';
-  excelWorkbook.lastModifiedBy = workbook.properties.lastAuthor ?? workbook.properties.author ?? 'MS Excel Clone';
+  excelWorkbook.creator = workbook.properties.author ?? 'Go Excel';
+  excelWorkbook.lastModifiedBy =
+    workbook.properties.lastAuthor ?? workbook.properties.author ?? 'Go Excel';
   excelWorkbook.created = workbook.properties.createdAt
     ? new Date(workbook.properties.createdAt)
     : new Date();
@@ -97,7 +95,9 @@ function writeSheet(excelWorkbook: ExcelJS.Workbook, sheet: Sheet): void {
   const worksheet = excelWorkbook.addWorksheet(sheet.name, {
     properties: {
       tabColor: sheet.tabColor ? { argb: colorToArgb(sheet.tabColor) } : undefined,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- lint-staged can't resolve @excel/shared types
       defaultColWidth: pixelsToWidth(DEFAULT_COLUMN_WIDTH),
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- lint-staged can't resolve @excel/shared types
       defaultRowHeight: pixelsToPoints(DEFAULT_ROW_HEIGHT),
     },
     views: [
@@ -242,7 +242,11 @@ function writeCell(worksheet: ExcelJS.Worksheet, cell: Cell): void {
   // Handle hyperlinks
   if (cell.hyperlink) {
     excelCell.value = {
-      text: cell.hyperlink.displayText ?? excelCell.value?.toString() ?? cell.hyperlink.url,
+      text:
+        cell.hyperlink.displayText ??
+        (typeof excelCell.value === 'string' || typeof excelCell.value === 'number'
+          ? String(excelCell.value)
+          : cell.hyperlink.url),
       hyperlink: cell.hyperlink.url,
     };
     if (cell.hyperlink.tooltip) {
@@ -297,11 +301,14 @@ function setCellValue(excelCell: ExcelJS.Cell, cell: Cell): void {
       break;
     case 'number':
       // Check if this is a date value (number format indicates date)
-      if (cell.style?.numberFormat?.category === 'date' ||
-          cell.style?.numberFormat?.category === 'time') {
+      if (
+        cell.style?.numberFormat?.category === 'date' ||
+        cell.style?.numberFormat?.category === 'time'
+      ) {
         // Excel dates are stored as serial numbers (days since 1899-12-30)
         // If the value looks like an Excel date serial, convert it
-        if (value.value > 0 && value.value < 2958466) { // Max Excel date
+        if (value.value > 0 && value.value < 2958466) {
+          // Max Excel date
           excelCell.value = excelSerialToDate(value.value);
         } else {
           excelCell.value = value.value;
@@ -442,7 +449,10 @@ function mapFontStyle(font: FontStyle): Partial<ExcelJS.Font> {
       excelFont.underline = font.underline;
     } else {
       // Map underline style
-      const underlineMap: Record<string, boolean | 'single' | 'double' | 'singleAccounting' | 'doubleAccounting'> = {
+      const underlineMap: Record<
+        string,
+        boolean | 'single' | 'double' | 'singleAccounting' | 'doubleAccounting'
+      > = {
         none: false,
         single: 'single',
         double: 'double',
@@ -534,7 +544,7 @@ function mapFillPattern(pattern: CellFill['pattern']): ExcelJS.FillPatterns {
     lightGrid: 'lightGrid',
     lightTrellis: 'lightTrellis',
   };
-  return patternMap[pattern] ?? 'none';
+  return patternMap[pattern];
 }
 
 /**
@@ -656,7 +666,7 @@ function writeMergedRegions(worksheet: ExcelJS.Worksheet, sheet: Sheet): void {
     const startRow = region.range.start.row + 1; // 1-indexed
     const endRow = region.range.end.row + 1;
 
-    worksheet.mergeCells(`${startCol}${startRow}:${endCol}${endRow}`);
+    worksheet.mergeCells(`${startCol}${String(startRow)}:${endCol}${String(endRow)}`);
   }
 }
 

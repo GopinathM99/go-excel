@@ -1,20 +1,20 @@
 # Performance Benchmarks
 
-This directory contains performance benchmarks for the MS Excel Clone core package.
+This directory contains performance benchmarks for the Go Excel core package.
 
 ## Performance Targets
 
-| Metric | Target |
-|--------|--------|
-| Scroll FPS | 60fps |
-| Open 1M cells | < 3s |
-| Recalc 10k formulas | < 500ms |
-| Recalc 100k formulas | < 2s |
-| Sort 10k rows | < 200ms |
-| Sort 100k rows | < 2s |
-| Filter 100k rows | < 500ms |
-| Memory (100k cells) | < 100MB |
-| Memory (1M cells) | < 500MB |
+| Metric               | Target  |
+| -------------------- | ------- |
+| Scroll FPS           | 60fps   |
+| Open 1M cells        | < 3s    |
+| Recalc 10k formulas  | < 500ms |
+| Recalc 100k formulas | < 2s    |
+| Sort 10k rows        | < 200ms |
+| Sort 100k rows       | < 2s    |
+| Filter 100k rows     | < 500ms |
+| Memory (100k cells)  | < 100MB |
+| Memory (1M cells)    | < 500MB |
 
 ## Running Benchmarks
 
@@ -57,6 +57,7 @@ node --expose-gc ./node_modules/vitest/vitest.mjs run --config vitest.perf.confi
 ### scroll.perf.ts
 
 Tests scroll and render performance:
+
 - Render 100k rows (visible portion only)
 - Scroll through 100k rows (FPS measurement)
 - Render with frozen panes (rows/columns)
@@ -65,6 +66,7 @@ Tests scroll and render performance:
 ### calculation.perf.ts
 
 Tests formula calculation performance:
+
 - Recalculate 10k cells with formulas
 - Recalculate 100k cells with formulas
 - Deep dependency chain (1000 levels)
@@ -74,6 +76,7 @@ Tests formula calculation performance:
 ### memory.perf.ts
 
 Tests memory usage and leak detection:
+
 - Memory for 100k cells
 - Memory for 1M cells
 - Memory leak detection (create/destroy cycles)
@@ -83,6 +86,7 @@ Tests memory usage and leak detection:
 ### data-tools.perf.ts
 
 Tests sort and filter performance:
+
 - Sort 10k rows (single/multi-column)
 - Sort 100k rows
 - Filter 100k rows (single/multiple criteria)
@@ -132,10 +136,10 @@ The tests will fail if performance targets are not met, preventing regressions.
 
 ```typescript
 const CI_CONFIG = {
-  thresholdMultiplier: 1.5,  // Allow 50% slack for CI
-  minIterations: 5,          // Statistical significance
-  failOnRegression: true,    // Fail build on regression
-  regressionThreshold: 20,   // 20% threshold for regression
+  thresholdMultiplier: 1.5, // Allow 50% slack for CI
+  minIterations: 5, // Statistical significance
+  failOnRegression: true, // Fail build on regression
+  regressionThreshold: 20, // 20% threshold for regression
 };
 ```
 
@@ -158,7 +162,7 @@ describe('My Performance Tests', () => {
       'My Operation',
       () => performOperation(sheet),
       200, // Target: 200ms
-      10   // 10 iterations
+      10 // 10 iterations
     );
 
     expect(result.passed).toBe(true);
