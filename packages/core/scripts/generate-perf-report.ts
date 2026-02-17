@@ -246,7 +246,7 @@ function loadBenchmarkResults(inputPath?: string): BenchmarkResult[] {
     try {
       const content = fs.readFileSync(inputPath, 'utf-8');
       const data = JSON.parse(content);
-      return data.benchmarkResults || data;
+      return data.benchmarkResults ?? data;
     } catch {
       console.warn(`Could not load results from ${inputPath}`);
     }
@@ -443,7 +443,7 @@ Generated: ${timestamp}
       md += `- **Target**: ${entry.target}${entry.unit}\n`;
       if (entry.baseline) {
         md += `- **Baseline**: ${entry.baseline.toFixed(2)}${entry.unit}\n`;
-        md += `- **Delta**: ${entry.deltaPercent?.toFixed(1)}%\n`;
+        md += `- **Delta**: ${entry.deltaPercent?.toFixed(1) ?? 'N/A'}%\n`;
       }
       md += `- **Range**: ${entry.min.toFixed(2)} - ${entry.max.toFixed(2)}${entry.unit}\n`;
       md += `- **Std Dev**: ${entry.stdDev.toFixed(2)}${entry.unit}\n\n`;
@@ -455,7 +455,7 @@ Generated: ${timestamp}
   if (improvedEntries.length > 0) {
     md += `\n## Improvements\n\n`;
     for (const entry of improvedEntries) {
-      md += `- **${entry.name}**: ${Math.abs(entry.deltaPercent!).toFixed(1)}% faster (${entry.baseline?.toFixed(2)} -> ${entry.current.toFixed(2)}${entry.unit})\n`;
+      md += `- **${entry.name}**: ${Math.abs(entry.deltaPercent!).toFixed(1)}% faster (${entry.baseline?.toFixed(2) ?? 'N/A'} -> ${entry.current.toFixed(2)}${entry.unit})\n`;
     }
   }
 
@@ -497,7 +497,7 @@ function generateHtmlReport(entries: ReportEntry[], systemInfo: SystemInfo): str
     name: e.name,
     current: e.current,
     target: e.target,
-    baseline: e.baseline || e.target,
+    baseline: e.baseline ?? e.target,
   }));
 
   return `<!DOCTYPE html>
@@ -877,7 +877,7 @@ async function main(): Promise<void> {
 
   if (args.format === 'markdown' || args.format === 'both') {
     const mdReport = generateMarkdownReport(entries, systemInfo);
-    const mdPath = args.output || path.join(reportsDir, `perf-report-${timestamp}.md`);
+    const mdPath = args.output ?? path.join(reportsDir, `perf-report-${timestamp}.md`);
     fs.writeFileSync(mdPath, mdReport);
     console.log(`  Markdown report: ${mdPath}`);
   }
@@ -899,7 +899,7 @@ async function main(): Promise<void> {
   console.log(`\nSummary: ${passed} passed, ${failed} failed\n`);
 }
 
-main().catch((error) => {
+main().catch((error: unknown) => {
   console.error('Error generating report:', error);
   process.exit(1);
 });

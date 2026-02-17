@@ -278,12 +278,9 @@ function runBenchmarks(): BenchmarkResult[] {
       stdio: 'inherit',
       env: { ...process.env, PERF_VALIDATION: 'true' },
     });
-  } catch (error) {
+  } catch {
     console.warn('  Warning: Some benchmark tests may have failed\n');
   }
-
-  // Read results from the JSON output
-  const resultsPath = path.resolve(__dirname, '../tests/perf/results.json');
 
   // For demonstration, we'll simulate some benchmark results
   // In production, this would parse the actual vitest output
@@ -403,7 +400,7 @@ function validateResults(
     if (!target) continue;
 
     const baselineEntry = baseline?.metrics[result.metric];
-    const effectiveThreshold = globalThreshold || target.threshold;
+    const effectiveThreshold = globalThreshold > 0 ? globalThreshold : target.threshold;
 
     // Check against target
     let targetPassed: boolean;
@@ -498,7 +495,7 @@ function printResults(results: ValidationResult[], verbose: boolean): void {
         console.log(`       Actual: ${result.actual.toFixed(2)}${result.unit}`);
         if (result.baselineValue !== undefined) {
           console.log(`       Baseline: ${result.baselineValue.toFixed(2)}${result.unit}`);
-          console.log(`       Delta: ${result.baselineDeltaPercent?.toFixed(1)}%`);
+          console.log(`       Delta: ${result.baselineDeltaPercent?.toFixed(1) ?? 'N/A'}%`);
         }
       }
     }
@@ -571,7 +568,7 @@ async function main(): Promise<void> {
 
   console.log(`\nConfiguration:`);
   console.log(`  Threshold: ${args.threshold}%`);
-  console.log(`  Update Baseline: ${args.updateBaseline}`);
+  console.log(`  Update Baseline: ${String(args.updateBaseline)}`);
   console.log(`  Git Commit: ${getGitCommit()}`);
 
   // Run benchmarks
@@ -612,7 +609,7 @@ async function main(): Promise<void> {
   process.exit(0);
 }
 
-main().catch((error) => {
+main().catch((error: unknown) => {
   console.error('Error running performance validation:', error);
   process.exit(1);
 });

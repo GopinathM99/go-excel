@@ -95,10 +95,8 @@ function writeSheet(excelWorkbook: ExcelJS.Workbook, sheet: Sheet): void {
   const worksheet = excelWorkbook.addWorksheet(sheet.name, {
     properties: {
       tabColor: sheet.tabColor ? { argb: colorToArgb(sheet.tabColor) } : undefined,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- lint-staged can't resolve @excel/shared types
-      defaultColWidth: pixelsToWidth(DEFAULT_COLUMN_WIDTH),
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument -- lint-staged can't resolve @excel/shared types
-      defaultRowHeight: pixelsToPoints(DEFAULT_ROW_HEIGHT),
+      defaultColWidth: pixelsToWidth(DEFAULT_COLUMN_WIDTH as number),
+      defaultRowHeight: pixelsToPoints(DEFAULT_ROW_HEIGHT as number),
     },
     views: [
       {

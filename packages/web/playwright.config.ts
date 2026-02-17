@@ -40,7 +40,7 @@ export default defineConfig({
   // Shared settings for all projects
   use: {
     // Base URL for navigation
-    baseURL: process.env['BASE_URL'] || 'http://localhost:3000',
+    baseURL: process.env['BASE_URL'] ?? 'http://localhost:3000',
 
     // Collect trace when retrying the failed test
     trace: 'on-first-retry',

@@ -111,7 +111,7 @@ export interface BenchmarkResult {
  * @param fn - Function to measure
  * @returns Timing result with duration in ms
  */
-export function measureTime<T>(fn: () => T): TimingResult {
+export function measureTime(fn: () => unknown): TimingResult {
   const start = performance.now();
   const result = fn();
   const end = performance.now();
@@ -148,7 +148,7 @@ export async function measureTimeAsync<T>(fn: () => Promise<T>): Promise<TimingR
  * @param fn - Function to measure
  * @returns Memory result with usage stats
  */
-export function measureMemory<T>(fn: () => T): MemoryResult {
+export function measureMemory(fn: () => unknown): MemoryResult {
   // Force garbage collection if available (requires --expose-gc flag)
   if (typeof globalThis.gc === 'function') {
     globalThis.gc();
@@ -178,7 +178,7 @@ export function measureMemory<T>(fn: () => T): MemoryResult {
  * Gets current memory usage in bytes
  */
 function getMemoryUsage(): number {
-  if (typeof process !== 'undefined' && process.memoryUsage) {
+  if (typeof process !== 'undefined') {
     return process.memoryUsage().heapUsed;
   }
   // Fallback for browser environment
